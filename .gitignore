@@ -1,0 +1,5 @@
+# Claude Code helyi beállítások
+.claude/
+
+# Kiadási csomagok – ezek a GitHub Releases oldalra kerülnek, nem a repóba
+*.zip
