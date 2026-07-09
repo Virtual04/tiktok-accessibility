@@ -26,6 +26,8 @@ Minden parancs **egyetlen billentyű**, ha az NVDA **fókusz módban** van (vál
 | `N` | Következő videó |
 | `P` | Előző videó |
 | `L` | Kedvelés / kedvelés visszavonása |
+| `F` | Hozzáadás a kedvencekhez / eltávolítás onnan |
+| `S` | A videó linkjének másolása a vágólapra |
 | `C` | Kommentek megnyitása / bezárása (nyitott panel alatt az olvasás a panelen belül marad, mint egy párbeszédablakban) |
 | `I` | Aktuális videó részletes adatai (szerző, leírás, zene, számlálók, állapot) |
 | `A` | Automatikus videóbejelentés ki/be |

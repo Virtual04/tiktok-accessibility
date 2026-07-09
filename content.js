@@ -41,6 +41,13 @@
       liked: 'Kedvelve',
       unliked: 'Kedvelés visszavonva',
       likeToggled: 'Kedvelés átváltva',
+      favBtnMissing: 'Kedvencek gomb nem található',
+      favAdded: 'Kedvencekhez adva',
+      favRemoved: 'Eltávolítva a kedvencekből',
+      favToggled: 'Kedvencek átváltva',
+      linkCopied: 'A videó linkje a vágólapra másolva',
+      linkCopyFailed: 'Nem sikerült a vágólapra másolni',
+      linkNotFound: 'A videó linkje nem található',
       commentBtnMissing: 'Komment gomb nem található',
       commentsOpenTrap: 'Kommentek megnyitva, az olvasás a panelen belül marad. A szerkesztőmező a panel végén van. Bezárás: C.',
       commentsOpen: 'Kommentek megnyitva',
@@ -51,7 +58,8 @@
       help:
         'TikTok akadálymentesítő billentyűk: ' +
         'M némítás. Vessző halkítás, pont hangosítás. K lejátszás vagy szünet. ' +
-        'N következő videó, P előző videó. L kedvelés. C kommentek megnyitása vagy bezárása. ' +
+        'N következő videó, P előző videó. L kedvelés. F kedvencekhez adás. ' +
+        'S a videó linkjének másolása a vágólapra. C kommentek megnyitása vagy bezárása. ' +
         'I aktuális videó részletes adatai. A automatikus bejelentés ki és be. H ez a súgó. ' +
         'Böngészőmódban ugyanezek Alt plusz Shift lenyomásával használhatók.',
       authorPrefix: 'Szerző: ',
@@ -84,6 +92,13 @@
       liked: 'Liked',
       unliked: 'Like removed',
       likeToggled: 'Like toggled',
+      favBtnMissing: 'Favorites button not found',
+      favAdded: 'Added to favorites',
+      favRemoved: 'Removed from favorites',
+      favToggled: 'Favorite toggled',
+      linkCopied: 'Video link copied to clipboard',
+      linkCopyFailed: 'Could not copy to clipboard',
+      linkNotFound: 'Video link not found',
       commentBtnMissing: 'Comment button not found',
       commentsOpenTrap: 'Comments opened, reading stays inside the panel. The edit field is at the end of the panel. Close: C.',
       commentsOpen: 'Comments opened',
@@ -94,7 +109,8 @@
       help:
         'TikTok accessibility keys: ' +
         'M mute. Comma volume down, period volume up. K play or pause. ' +
-        'N next video, P previous video. L like. C open or close comments. ' +
+        'N next video, P previous video. L like. F add to favorites. ' +
+        'S copy the video link to the clipboard. C open or close comments. ' +
         'I detailed info about the current video. A toggle automatic announcements. H this help. ' +
         'In browse mode use the same keys with Alt plus Shift.',
       authorPrefix: 'Author: ',
@@ -385,6 +401,73 @@
     }, 400);
   }
 
+  function favoriteCurrent() {
+    const container = getContainer(getActiveVideo()) || document;
+    const btn = clickable(container.querySelector(SEL.favBtn) || document.querySelector(SEL.favBtn));
+    if (!btn) { announce(STR.favBtnMissing, true); return; }
+    const wasPressed = btn.getAttribute('aria-pressed');
+    btn.click();
+    setTimeout(() => {
+      const nowPressed = btn.getAttribute('aria-pressed');
+      if (nowPressed !== null && nowPressed !== wasPressed) {
+        announce(nowPressed === 'true' ? STR.favAdded : STR.favRemoved, true);
+      } else {
+        announce(STR.favToggled, true);
+      }
+    }, 400);
+  }
+
+  // ---------------------------------------------------------------------
+  // A videó linkjének kimásolása a vágólapra
+  // ---------------------------------------------------------------------
+  function getVideoUrl(container) {
+    // Videó saját oldalán maga a cím a link
+    if (location.pathname.includes('/video/') || location.pathname.includes('/photo/')) {
+      return location.href.split('?')[0];
+    }
+    const scope = container || document;
+    // A hírfolyam-elemben lévő közvetlen videólink
+    const direct = scope.querySelector('a[href*="/video/"], a[href*="/photo/"]');
+    if (direct) {
+      return new URL(direct.getAttribute('href'), location.origin).href.split('?')[0];
+    }
+    // Tartalék: a lejátszó-konténer azonosítójából (xgwrapper-...-VIDEÓAZONOSÍTÓ)
+    // és a szerző nevéből rakjuk össze a szabványos linket
+    const wrapper = scope.querySelector('[id*="xgwrapper"]');
+    const idMatch = wrapper && wrapper.id.match(/(\d{8,})/);
+    if (idMatch) {
+      const author = getAuthor(scope).replace(/^@/, '');
+      if (author) return location.origin + '/@' + author + '/video/' + idMatch[1];
+    }
+    return '';
+  }
+
+  async function copyCurrentLink() {
+    const url = getVideoUrl(getContainer(getActiveVideo()));
+    if (!url) { announce(STR.linkNotFound, true); return; }
+    let ok = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      ok = true;
+    } catch (e) { /* jön a tartalék módszer */ }
+    if (!ok) {
+      const focused = document.activeElement;
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        ta.remove();
+      } catch (e) { /* marad a hibaüzenet */ }
+      if (focused && focused.focus) {
+        try { focused.focus({ preventScroll: true }); } catch (e) { /* nem kritikus */ }
+      }
+    }
+    announce(ok ? STR.linkCopied : STR.linkCopyFailed, true);
+  }
+
   function isVisible(el) {
     if (!el || !el.isConnected) return false;
     const r = el.getBoundingClientRect();
@@ -535,6 +618,8 @@
     'n': () => nextVideo(1),
     'p': () => nextVideo(-1),
     'l': likeCurrent,
+    'f': favoriteCurrent,
+    's': copyCurrentLink,
     'c': toggleComments,
     'i': () => announce(detailedInfo(getContainer(getActiveVideo()))),
     'a': toggleAutoAnnounce,
