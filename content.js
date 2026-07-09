@@ -27,50 +27,57 @@
   // ---------------------------------------------------------------------
   const LANGS = {
     hu: {
-      active: 'TikTok akadálymentesítő aktív. Súgó: H billentyű, böngészőmódban Alt plusz Shift plusz H.',
+      active: 'A TikTok akadálymentesítő elindult. A súgóhoz nyomd meg a H billentyűt, böngészőmódban az Alt plusz Shift plusz H-t.',
       muted: 'Némítva',
-      unmuted: 'Hang bekapcsolva, hangerő {pct} százalék',
-      volume: 'Hangerő {pct} százalék',
-      volumeMutedSuffix: ', némítva',
-      noVideo: 'Nem található videó',
-      play: 'Lejátszás',
-      pause: 'Szünet',
-      noNext: 'Nincs következő videó',
-      noPrev: 'Nincs előző videó',
-      likeBtnMissing: 'Kedvelés gomb nem található',
-      liked: 'Kedvelve',
-      unliked: 'Kedvelés visszavonva',
-      likeToggled: 'Kedvelés átváltva',
-      favBtnMissing: 'Kedvencek gomb nem található',
-      favAdded: 'Kedvencekhez adva',
-      favRemoved: 'Eltávolítva a kedvencekből',
-      favToggled: 'Kedvencek átváltva',
-      linkCopied: 'A videó linkje a vágólapra másolva',
-      linkCopyFailed: 'Nem sikerült a vágólapra másolni',
-      linkNotFound: 'A videó linkje nem található',
-      commentBtnMissing: 'Komment gomb nem található',
-      commentsOpenTrap: 'Kommentek megnyitva, az olvasás a panelen belül marad. A szerkesztőmező a panel végén van. Bezárás: C.',
-      commentsOpen: 'Kommentek megnyitva',
-      commentsClosed: 'Kommentek bezárva',
-      commentsCloseFailed: 'A kommentpanelt nem sikerült bezárni',
-      autoOn: 'Automatikus videóbejelentés bekapcsolva',
-      autoOff: 'Automatikus videóbejelentés kikapcsolva',
+      mutedAction: 'Elnémítottad a videót',
+      unmuted: 'Visszakapcsoltad a hangot, a hangerő {pct} százalék',
+      volume: 'Hangerő: {pct} százalék',
+      volumeMutedSuffix: ', a videó némítva van',
+      noVideo: 'Nem találok videót az oldalon',
+      play: 'Elindítottad a videót',
+      pause: 'Megállítottad a videót',
+      noNext: 'Ez az utolsó videó, nincs következő',
+      noPrev: 'Ez az első videó, nincs előző',
+      likeBtnMissing: 'Nem találom a kedvelés gombot',
+      liked: 'Kedvelted a videót',
+      unliked: 'Levetted a kedvelést a videóról',
+      likeToggled: 'Megnyomtad a kedvelés gombot',
+      favBtnMissing: 'Nem találom a kedvencek gombot',
+      favAdded: 'Hozzáadtad a videót a kedvenceidhez',
+      favRemoved: 'Eltávolítottad a videót a kedvenceid közül',
+      favToggled: 'Megnyomtad a kedvencek gombot',
+      followBtnMissing: 'Nem találom a követés gombot',
+      followed: 'Bekövetted: {name}',
+      unfollowed: 'Kikövetted: {name}',
+      followToggled: 'Megnyomtad a követés gombot: {name}',
+      nameFallback: 'ismeretlen felhasználó',
+      linkCopied: 'A videó linkjét a vágólapra másoltam, beillesztheted bárhová',
+      linkCopyFailed: 'Nem sikerült a vágólapra másolni a linket',
+      linkNotFound: 'Nem találom a videó linkjét',
+      commentBtnMissing: 'Nem találom a komment gombot',
+      commentsOpenTrap: 'Megnyitottad a kommenteket, az olvasás a panelen belül marad. A hozzászólásíró mező a panel végén van. Bezárás: C.',
+      commentsOpen: 'Megnyitottad a kommenteket',
+      commentsClosed: 'Bezártad a kommenteket',
+      commentsCloseFailed: 'Nem sikerült bezárni a kommentpanelt',
+      autoOn: 'Mostantól automatikusan bemondom az új videókat',
+      autoOff: 'Kikapcsoltad az automatikus videóbemondást',
       help:
-        'TikTok akadálymentesítő billentyűk: ' +
-        'M némítás. Vessző halkítás, pont hangosítás. K lejátszás vagy szünet. ' +
-        'N következő videó, P előző videó. L kedvelés. F kedvencekhez adás. ' +
-        'S a videó linkjének másolása a vágólapra. C kommentek megnyitása vagy bezárása. ' +
-        'I aktuális videó részletes adatai. A automatikus bejelentés ki és be. H ez a súgó. ' +
-        'Böngészőmódban ugyanezek Alt plusz Shift lenyomásával használhatók.',
+        'A TikTok akadálymentesítő billentyűi: ' +
+        'M némítás be és ki. Vessző halkítás, pont hangosítás. K lejátszás vagy megállítás. ' +
+        'N a következő videó, P az előző videó. L kedvelés. F hozzáadás a kedvencekhez. ' +
+        'B a szerző bekövetése vagy kikövetése. S a videó linkjének másolása a vágólapra. ' +
+        'C a kommentek megnyitása vagy bezárása. I az aktuális videó részletes adatai. ' +
+        'A az automatikus videóbemondás ki- és bekapcsolása. H ez a súgó. ' +
+        'Böngészőmódban ugyanezek az Alt plusz Shift lenyomásával használhatók.',
       authorPrefix: 'Szerző: ',
-      authorUnknown: 'Szerző ismeretlen',
+      authorUnknown: 'A szerzőt nem sikerült felismerni',
       descPrefix: 'Leírás: ',
       musicPrefix: 'Zene: ',
       likesPrefix: 'Kedvelések: ',
       commentsPrefix: 'Kommentek: ',
-      statePlaying: 'Lejátszás alatt',
-      statePaused: 'Szüneteltetve',
-      newVideoNoData: 'Új videó, adatok nem találhatók.',
+      statePlaying: 'A videó éppen megy',
+      statePaused: 'A videó meg van állítva',
+      newVideoNoData: 'Új videó következik, a részleteit nem sikerült felolvasni.',
       labelLike: 'Kedvelés',
       labelComments: 'Kommentek',
       labelShare: 'Megosztás',
@@ -78,50 +85,57 @@
       labelMusic: 'Zene',
     },
     en: {
-      active: 'TikTok accessibility helper active. Help: press H, or Alt plus Shift plus H in browse mode.',
+      active: 'TikTok accessibility helper is running. For help, press H, or Alt plus Shift plus H in browse mode.',
       muted: 'Muted',
-      unmuted: 'Sound on, volume {pct} percent',
-      volume: 'Volume {pct} percent',
-      volumeMutedSuffix: ', muted',
-      noVideo: 'No video found',
-      play: 'Playing',
-      pause: 'Paused',
-      noNext: 'No next video',
-      noPrev: 'No previous video',
-      likeBtnMissing: 'Like button not found',
-      liked: 'Liked',
-      unliked: 'Like removed',
-      likeToggled: 'Like toggled',
-      favBtnMissing: 'Favorites button not found',
-      favAdded: 'Added to favorites',
-      favRemoved: 'Removed from favorites',
-      favToggled: 'Favorite toggled',
-      linkCopied: 'Video link copied to clipboard',
-      linkCopyFailed: 'Could not copy to clipboard',
-      linkNotFound: 'Video link not found',
-      commentBtnMissing: 'Comment button not found',
-      commentsOpenTrap: 'Comments opened, reading stays inside the panel. The edit field is at the end of the panel. Close: C.',
-      commentsOpen: 'Comments opened',
-      commentsClosed: 'Comments closed',
+      mutedAction: 'You muted the video',
+      unmuted: 'Sound is back on, volume {pct} percent',
+      volume: 'Volume: {pct} percent',
+      volumeMutedSuffix: ', the video is muted',
+      noVideo: 'No video found on this page',
+      play: 'Video playing',
+      pause: 'Video paused',
+      noNext: 'This is the last video, there is no next one',
+      noPrev: 'This is the first video, there is no previous one',
+      likeBtnMissing: 'Could not find the like button',
+      liked: 'You liked this video',
+      unliked: 'You removed your like from this video',
+      likeToggled: 'You pressed the like button',
+      favBtnMissing: 'Could not find the favorites button',
+      favAdded: 'You added this video to your favorites',
+      favRemoved: 'You removed this video from your favorites',
+      favToggled: 'You pressed the favorites button',
+      followBtnMissing: 'Could not find the follow button',
+      followed: 'You are now following {name}',
+      unfollowed: 'You unfollowed {name}',
+      followToggled: 'You pressed the follow button for {name}',
+      nameFallback: 'this user',
+      linkCopied: 'Video link copied to the clipboard, you can paste it anywhere',
+      linkCopyFailed: 'Could not copy the link to the clipboard',
+      linkNotFound: 'Could not find the link of this video',
+      commentBtnMissing: 'Could not find the comment button',
+      commentsOpenTrap: 'Comments are open, reading stays inside the panel. The comment box is at the end of the panel. Close with C.',
+      commentsOpen: 'Comments are open',
+      commentsClosed: 'You closed the comments',
       commentsCloseFailed: 'Could not close the comment panel',
-      autoOn: 'Automatic video announcements on',
-      autoOff: 'Automatic video announcements off',
+      autoOn: 'New videos will now be announced automatically',
+      autoOff: 'You turned off automatic video announcements',
       help:
         'TikTok accessibility keys: ' +
-        'M mute. Comma volume down, period volume up. K play or pause. ' +
+        'M mute and unmute. Comma volume down, period volume up. K play or pause. ' +
         'N next video, P previous video. L like. F add to favorites. ' +
-        'S copy the video link to the clipboard. C open or close comments. ' +
-        'I detailed info about the current video. A toggle automatic announcements. H this help. ' +
+        'B follow or unfollow the author. S copy the video link to the clipboard. ' +
+        'C open or close comments. I detailed info about the current video. ' +
+        'A toggle automatic announcements. H this help. ' +
         'In browse mode use the same keys with Alt plus Shift.',
       authorPrefix: 'Author: ',
-      authorUnknown: 'Author unknown',
+      authorUnknown: 'Could not identify the author',
       descPrefix: 'Description: ',
       musicPrefix: 'Music: ',
       likesPrefix: 'Likes: ',
       commentsPrefix: 'Comments: ',
-      statePlaying: 'Playing',
-      statePaused: 'Paused',
-      newVideoNoData: 'New video, no details found.',
+      statePlaying: 'The video is playing',
+      statePaused: 'The video is paused',
+      newVideoNoData: 'New video, but its details could not be read.',
       labelLike: 'Like',
       labelComments: 'Comments',
       labelShare: 'Share',
@@ -229,6 +243,7 @@
     commentCount: '[data-e2e="comment-count"], [data-e2e="browse-comment-count"]',
     shareBtn: '[data-e2e="share-icon"], [data-e2e="browse-share-icon"]',
     favBtn: '[data-e2e="favorite-icon"], [data-e2e="undefined-icon"]',
+    followBtn: '[data-e2e="follow-button"], [data-e2e="feed-follow"], [data-e2e="browse-follow"]',
     commentPanel: '[data-e2e="comment-list"], [class*="DivCommentListContainer"], [class*="DivCommentContainer"]',
     commentInput: '[data-e2e="comment-input"], [class*="DivCommentInputContainer"], [class*="CommentInput"]',
     closeBtn: '[data-e2e="comment-close"], [data-e2e="browse-close"], [class*="CloseIcon"], button[aria-label*="close" i], button[aria-label*="bezár" i]',
@@ -311,7 +326,7 @@
     saveSettings();
     announce(
       settings.muted
-        ? STR.muted
+        ? STR.mutedAction
         : fmt(STR.unmuted, { pct: Math.round(settings.volume * 100) }),
       true
     );
@@ -413,6 +428,31 @@
         announce(nowPressed === 'true' ? STR.favAdded : STR.favRemoved, true);
       } else {
         announce(STR.favToggled, true);
+      }
+    }, 400);
+  }
+
+  // A szerző bekövetése/kikövetése ugyanazzal a gombbal. Az állapotot a gomb
+  // kattintás ELŐTTI feliratából állapítjuk meg (Follow/Követés = még nem
+  // követed), mert a TikTok nem tesz rá aria-pressed attribútumot.
+  const FOLLOW_WORDS = ['follow', 'követés', 'kövesd'];
+  const FOLLOWING_WORDS = ['following', 'friends', 'követed', 'barátok'];
+
+  function followCurrent() {
+    const container = getContainer(getActiveVideo()) || document;
+    const el = container.querySelector(SEL.followBtn) || document.querySelector(SEL.followBtn);
+    const btn = clickable(el);
+    if (!btn || !isVisible(btn)) { announce(STR.followBtnMissing, true); return; }
+    const before = (btn.textContent || '').trim().toLowerCase();
+    const name = getAuthor(container) || STR.nameFallback;
+    btn.click();
+    setTimeout(() => {
+      if (FOLLOW_WORDS.includes(before)) {
+        announce(fmt(STR.followed, { name }), true);
+      } else if (FOLLOWING_WORDS.includes(before)) {
+        announce(fmt(STR.unfollowed, { name }), true);
+      } else {
+        announce(fmt(STR.followToggled, { name }), true);
       }
     }, 400);
   }
@@ -619,6 +659,7 @@
     'p': () => nextVideo(-1),
     'l': likeCurrent,
     'f': favoriteCurrent,
+    'b': followCurrent,
     's': copyCurrentLink,
     'c': toggleComments,
     'i': () => announce(detailedInfo(getContainer(getActiveVideo()))),

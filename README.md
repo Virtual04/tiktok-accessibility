@@ -27,6 +27,7 @@ Every command is a **single key** when NVDA is in **focus mode** (toggle: `NVDA+
 | `P` | Previous video |
 | `L` | Like / remove like |
 | `F` | Add to / remove from favorites |
+| `B` | Follow / unfollow the video's author |
 | `S` | Copy the video link to the clipboard |
 | `C` | Open / close comments (while open, reading stays inside the panel, like in a dialog) |
 | `I` | Detailed info about the current video (author, description, music, counts, state) |
