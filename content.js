@@ -381,14 +381,12 @@
       }));
     }
 
-    // Az automatikus figyelő úgyis bejelenti az új videót; itt csak jelzünk,
-    // ha nem sikerült elmozdulni.
+    // Az új videót az automatikus figyelő mondja be (ha be van kapcsolva);
+    // itt csak azt jelezzük, ha nem sikerült elmozdulni.
     setTimeout(() => {
       const after = getContainer(getActiveVideo());
       if (after === current) {
         announce(direction > 0 ? STR.noNext : STR.noPrev, true);
-      } else if (!settings.autoAnnounce) {
-        announce(shortInfo(after));
       }
     }, 700);
   }
