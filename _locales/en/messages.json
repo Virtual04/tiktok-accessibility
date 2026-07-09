@@ -1,0 +1,8 @@
+{
+  "extName": {
+    "message": "TikTok Accessibility"
+  },
+  "extDesc": {
+    "message": "Keyboard shortcuts, audio control and screen reader (NVDA) support for tiktok.com."
+  }
+}

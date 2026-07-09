@@ -1,79 +1,81 @@
-# TikTok Akadálymentesítő
+# TikTok Accessibility
 
-Böngészőbővítmény, amely a tiktok.com webhelyet teszi használhatóvá képernyőolvasóval (NVDA-ra optimalizálva). Nem külön alkalmazás: a normál TikTok weboldalon fut, a saját fiókoddal, bejelentkezés után.
+*English description. [Magyar leírás itt olvasható](README.hu.md).*
 
-## Mit tud?
+A browser extension that makes tiktok.com usable with screen readers (optimized for NVDA). It is not a separate app: it runs on the normal TikTok website, with your own account, after you sign in. Announcements follow your browser's language: Hungarian in a Hungarian browser, English otherwise.
 
-- **Hangvezérlés billentyűvel** – a TikTok némítás/hangerő gombja egérrel érhető csak el és címkézetlen; a bővítmény közvetlenül a videót vezérli, és minden új videón kikényszeríti a beállított hangerőt. (Ez oldja meg azt is, hogy „nincs hang”: a TikTok alapból némítva indul, és megjegyzi.)
-- **Videónavigáció** – következő/előző videó egyetlen billentyűvel.
-- **Automatikus bejelentés** – görgetéskor az NVDA felolvassa az új videó szerzőjét és leírását.
-- **Interakciók** – kedvelés, kommentek megnyitása/bezárása billentyűvel.
-- **Címkézés** – a címkézetlen ikongombok (kedvelés, komment, megosztás…) magyar `aria-label`-t kapnak.
-- A beállítások (hangerő, némítás, automatikus bejelentés) megmaradnak a böngésző újraindítása után is.
+## Features
 
-## Billentyűparancsok
+- **Keyboard audio control** – TikTok's mute/volume control is mouse-only and unlabeled; the extension controls the video element directly and re-applies your chosen volume on every new video. (This also fixes the common "no sound" problem: TikTok starts muted by default and remembers it.)
+- **Video navigation** – next/previous video with a single key.
+- **Automatic announcements** – when you scroll, NVDA reads the new video's author and description.
+- **Interactions** – like, open/close comments from the keyboard.
+- **Labeling** – unlabeled icon buttons (like, comment, share…) get proper `aria-label`s.
+- Settings (volume, mute, auto-announce) persist across browser restarts.
 
-Minden parancs **egyetlen billentyű**, ha az NVDA **fókusz módban** van (váltás: `NVDA+Szóköz`). **Böngészőmódból** ugyanezek `Alt+Shift`-tel együtt működnek (pl. `Alt+Shift+M`).
+## Keyboard shortcuts
 
-| Billentyű | Funkció |
+Every command is a **single key** when NVDA is in **focus mode** (toggle: `NVDA+Space`). From **browse mode**, the same keys work with `Alt+Shift` (e.g. `Alt+Shift+M`).
+
+| Key | Function |
 |---|---|
-| `M` | Némítás be/ki |
-| `,` (vessző) | Halkítás 10%-kal |
-| `.` (pont) | Hangosítás 10%-kal (némításból is felold) |
-| `K` | Lejátszás / szünet |
-| `N` | Következő videó |
-| `P` | Előző videó |
-| `L` | Kedvelés / kedvelés visszavonása |
-| `C` | Kommentek megnyitása / bezárása (nyitott panel alatt az olvasás a panelen belül marad, mint egy párbeszédablakban) |
-| `I` | Aktuális videó részletes adatai (szerző, leírás, zene, számlálók, állapot) |
-| `A` | Automatikus videóbejelentés ki/be |
-| `H` | Súgó (billentyűlista felolvasása) |
+| `M` | Mute / unmute |
+| `,` (comma) | Volume down 10% |
+| `.` (period) | Volume up 10% (also unmutes) |
+| `K` | Play / pause |
+| `N` | Next video |
+| `P` | Previous video |
+| `L` | Like / remove like |
+| `C` | Open / close comments (while open, reading stays inside the panel, like in a dialog) |
+| `I` | Detailed info about the current video (author, description, music, counts, state) |
+| `A` | Toggle automatic video announcements |
+| `H` | Help (reads the key list) |
 
-> **Figyelem:** ha a Windowsban több billentyűzetkiosztás van telepítve, az `Alt+Shift` alapból a kiosztások közt vált. Ilyenkor vagy használd a fókusz módot az egybetűs parancsokkal, vagy kapcsold ki a kiosztásváltó gyorsbillentyűt (Beállítások → Idő és nyelv → Gépelés → Speciális billentyűzetbeállítások → Beviteli nyelvi gyorsbillentyűk).
+> **Note:** if you have multiple keyboard layouts installed in Windows, `Alt+Shift` switches layouts by default. In that case either use focus mode with the single-key commands, or disable the layout-switching hotkey (Settings → Time & Language → Typing → Advanced keyboard settings → Input language hot keys).
 
-## Letöltés és telepítés
+## Download and install
 
-A bővítmény egyelőre nincs bővítményáruházban, innen GitHubról kell letölteni, és „kicsomagolt” bővítményként betölteni. Ez kb. 2 percet vesz igénybe, és képernyőolvasóval is végigcsinálható. A leírásban minden lépésnél a gombok/hivatkozások pontos neve szerepel, így NVDA-val kereshetők.
+The extension is not in a web store yet; download it from GitHub and load it as an "unpacked" extension. It takes about 2 minutes and is fully doable with a screen reader — every step below names the exact buttons and links so you can find them with NVDA.
 
-### 1. lépés: letöltés GitHubról
+### Step 1: download from GitHub
 
-1. Ezen az oldalon (a projekt GitHub-főoldalán) keresd meg a **„Code”** nevű gombot (NVDA-val: `B` billentyűvel gombról gombra lépkedve, vagy keresés a „Code” szóra).
-2. A lenyíló menüben válaszd a **„Download ZIP”** hivatkozást. A böngésző letölt egy ZIP-fájlt (a neve valami ilyesmi: `tiktok-akadalymentesito-main.zip`).
-3. Nyisd meg a Letöltések mappát, állj a ZIP-fájlra, és csomagold ki: helyi menü (Alkalmazás-billentyű vagy Shift+F10) → **„Az összes kibontása…”** → Kibontás gomb.
-4. **Fontos:** a kicsomagolt mappát olyan helyre tedd, ahonnan nem fogod törölni (pl. Dokumentumok), mert a böngésző onnan futtatja a bővítményt. Ha a mappát letörlöd vagy áthelyezed, a bővítmény eltűnik.
+1. On this page (the project's GitHub front page), find the button named **"Code"** (with NVDA: press `B` to jump between buttons, or search for the word "Code").
+2. In the dropdown, choose the **"Download ZIP"** link. Your browser downloads a ZIP file (named something like `tiktok-accessibility-main.zip`).
+3. Open your Downloads folder, select the ZIP file and extract it: context menu (Applications key or Shift+F10) → **"Extract All…"** → Extract.
+4. **Important:** put the extracted folder somewhere you won't delete it (e.g. Documents), because the browser runs the extension from that folder. If you delete or move the folder, the extension disappears.
 
-### 2. lépés, Chrome vagy Edge esetén
+### Step 2 for Chrome or Edge
 
-1. Írd be a címsorba: `chrome://extensions` (Edge-ben: `edge://extensions`), és nyomj Entert.
-2. Keresd meg a **„Fejlesztői mód”** kapcsolót (NVDA-val: keresés a „Fejlesztői” szóra), és kapcsold be (Szóköz).
-3. Megjelenik néhány új gomb. Válaszd a **„Kicsomagolt bővítmény betöltése”** gombot.
-4. A megnyíló mappaválasztóban keresd ki a kicsomagolt mappát. **Azt a mappát jelöld ki, amelyikben közvetlenül a `manifest.json` fájl van** (a kicsomagolásnál előfordulhat, hogy a ZIP neve szerinti mappán belül van még egy ugyanolyan nevű mappa – akkor a belsőt válaszd).
-5. Kész. Nyisd meg (vagy frissítsd F5-tel) a tiktok.com-ot – a bővítmény bejelentkezik: „TikTok akadálymentesítő aktív”.
-6. Megjegyzés: a Chrome minden indításnál figyelmeztethet a fejlesztői módú bővítményre („Fejlesztői módban futó bővítmények letiltása” kérdés) – ott a **„Mégse”** választandó, különben kikapcsolja a bővítményt.
+1. Type `chrome://extensions` in the address bar (`edge://extensions` in Edge) and press Enter.
+2. Find the **"Developer mode"** toggle (with NVDA: search for "Developer") and turn it on (Space).
+3. New buttons appear. Choose **"Load unpacked"**.
+4. In the folder picker, browse to the extracted folder. **Select the folder that directly contains `manifest.json`** (extraction sometimes creates a folder inside a folder with the same name — pick the inner one).
+5. Done. Open (or refresh with F5) tiktok.com — the extension announces itself: "TikTok accessibility helper active".
+6. Note: Chrome may warn about developer-mode extensions on every start ("Disable developer mode extensions") — choose **"Cancel"**, otherwise it turns the extension off.
 
-### 2. lépés, Firefox esetén
+### Step 2 for Firefox
 
-1. Írd be a címsorba: `about:debugging#/runtime/this-firefox`, és nyomj Entert.
-2. Válaszd az **„Ideiglenes kiegészítő betöltése…”** gombot.
-3. A fájlválasztóban keresd ki a kicsomagolt mappából a `manifest.json` fájlt, és nyisd meg.
-4. **Fontos korlát:** a Firefox az így betöltött kiegészítőt a böngésző bezárásakor eltávolítja, tehát minden indítás után újra be kell tölteni. Ha Firefoxot használsz rendszeresen, szólj a készítőnek – a Mozilla ingyenes aláírásával tartós telepítés is megoldható.
+1. Type `about:debugging#/runtime/this-firefox` in the address bar and press Enter.
+2. Choose the **"Load Temporary Add-on…"** button.
+3. In the file picker, select `manifest.json` from the extracted folder.
+4. **Important limitation:** Firefox removes temporarily loaded add-ons when the browser closes, so you must reload it after every restart. If you use Firefox regularly, let the author know — permanent installation is possible with Mozilla's free signing.
 
-### Frissítés újabb verzióra
+### Updating to a newer version
 
-1. Töltsd le újra a ZIP-et (1. lépés), és csomagold ki ugyanoda, a régi fájlok felülírásával.
-2. Chrome/Edge: a `chrome://extensions` oldalon a bővítmény kártyáján nyomd meg a **„Frissítés”** (újratöltés) gombot, vagy egyszerűen indítsd újra a böngészőt.
-3. Frissítsd a TikTok lapot (F5).
+1. Download the ZIP again (Step 1) and extract it to the same place, overwriting the old files.
+2. Chrome/Edge: on the `chrome://extensions` page, press the **"Reload"** button on the extension's card, or simply restart the browser.
+3. Refresh the TikTok tab (F5).
 
-## Használat NVDA-val – gyorstalpaló
+## Quick start with NVDA
 
-1. Nyisd meg a tiktok.com-ot és jelentkezz be.
-2. Nyomd meg az `NVDA+Szóköz`-t a **fókusz módhoz** – innentől az egybetűs parancsok működnek.
-3. Ha nincs hang: nyomj `M`-et (némítás feloldása), majd `.` (pont) billentyűvel hangosíts.
-4. `N`/`P` a videók közt, közben az NVDA automatikusan felolvassa az új videó szerzőjét és leírását.
-5. Ha olvasgatni akarsz (pl. kommenteket), válts vissza böngészőmódba (`NVDA+Szóköz`) – az Alt+Shift-es parancsok ott is működnek.
+1. Open tiktok.com and sign in.
+2. Press `NVDA+Space` for **focus mode** — single-key commands work from here.
+3. No sound? Press `M` (unmute), then `.` (period) to raise the volume.
+4. Use `N`/`P` to move between videos; NVDA automatically reads each new video's author and description.
+5. To read content (e.g. comments), switch back to browse mode (`NVDA+Space`) — the Alt+Shift commands still work there.
 
-## Ismert korlátok
+## Known limitations
 
-- A TikTok gyakran változtatja a weboldala felépítését; ilyenkor egy-egy funkció (pl. a szerző felolvasása vagy a like gomb megtalálása) eltörhet. Ez a `content.js` elején lévő `SEL` szelektorlista frissítésével javítható – jelezd, ha valami nem szólal meg.
-- A kommentírás a TikTok saját beviteli mezőjével megy; a mező a nyitott kommentpanelen belül, annak végén érhető el (Tab vagy lefelé nyilazás).
-- A bővítmény csak a webes felületen segít, a TikTok asztali (Microsoft Store-os) alkalmazásán nem.
+- TikTok changes its page structure often; a feature (e.g. reading the author, or finding the like button) may break. This is fixable by updating the `SEL` selector list at the top of `content.js` — please report anything that stops speaking.
+- Writing comments uses TikTok's own input field; it is at the end of the open comment panel (Tab or arrow down to reach it).
+- The extension only helps on the website, not in TikTok's desktop (Microsoft Store) app.

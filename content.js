@@ -1,5 +1,6 @@
 /*
  * TikTok Akadálymentesítő – tartalom-szkript
+ * TikTok Accessibility – content script
  *
  * Fut minden tiktok.com oldalon. Három dolgot csinál:
  *  1. Billentyűparancsok (némítás, hangerő, navigáció, like, kommentek, infó).
@@ -9,6 +10,9 @@
  *     és automatikusan felolvassa az új videó szerzőjét/leírását görgetéskor.
  *  3. Felcímkézi a TikTok címkézetlen ikongombjait (like, komment, megosztás…),
  *     és kikényszeríti a beállított hangerőt/némítást minden videón.
+ *
+ * A felolvasott szövegek a böngésző felületi nyelvéhez igazodnak:
+ * magyar böngészőben magyarul, minden más esetben angolul szólalnak meg.
  */
 (() => {
   'use strict';
@@ -17,6 +21,105 @@
   window.__ttA11yLoaded = true;
 
   const ext = typeof browser !== 'undefined' ? browser : chrome;
+
+  // ---------------------------------------------------------------------
+  // Nyelvi szótár / language dictionary
+  // ---------------------------------------------------------------------
+  const LANGS = {
+    hu: {
+      active: 'TikTok akadálymentesítő aktív. Súgó: H billentyű, böngészőmódban Alt plusz Shift plusz H.',
+      muted: 'Némítva',
+      unmuted: 'Hang bekapcsolva, hangerő {pct} százalék',
+      volume: 'Hangerő {pct} százalék',
+      volumeMutedSuffix: ', némítva',
+      noVideo: 'Nem található videó',
+      play: 'Lejátszás',
+      pause: 'Szünet',
+      noNext: 'Nincs következő videó',
+      noPrev: 'Nincs előző videó',
+      likeBtnMissing: 'Kedvelés gomb nem található',
+      liked: 'Kedvelve',
+      unliked: 'Kedvelés visszavonva',
+      likeToggled: 'Kedvelés átváltva',
+      commentBtnMissing: 'Komment gomb nem található',
+      commentsOpenTrap: 'Kommentek megnyitva, az olvasás a panelen belül marad. A szerkesztőmező a panel végén van. Bezárás: C.',
+      commentsOpen: 'Kommentek megnyitva',
+      commentsClosed: 'Kommentek bezárva',
+      commentsCloseFailed: 'A kommentpanelt nem sikerült bezárni',
+      autoOn: 'Automatikus videóbejelentés bekapcsolva',
+      autoOff: 'Automatikus videóbejelentés kikapcsolva',
+      help:
+        'TikTok akadálymentesítő billentyűk: ' +
+        'M némítás. Vessző halkítás, pont hangosítás. K lejátszás vagy szünet. ' +
+        'N következő videó, P előző videó. L kedvelés. C kommentek megnyitása vagy bezárása. ' +
+        'I aktuális videó részletes adatai. A automatikus bejelentés ki és be. H ez a súgó. ' +
+        'Böngészőmódban ugyanezek Alt plusz Shift lenyomásával használhatók.',
+      authorPrefix: 'Szerző: ',
+      authorUnknown: 'Szerző ismeretlen',
+      descPrefix: 'Leírás: ',
+      musicPrefix: 'Zene: ',
+      likesPrefix: 'Kedvelések: ',
+      commentsPrefix: 'Kommentek: ',
+      statePlaying: 'Lejátszás alatt',
+      statePaused: 'Szüneteltetve',
+      newVideoNoData: 'Új videó, adatok nem találhatók.',
+      labelLike: 'Kedvelés',
+      labelComments: 'Kommentek',
+      labelShare: 'Megosztás',
+      labelFavorite: 'Mentés a kedvencekhez',
+      labelMusic: 'Zene',
+    },
+    en: {
+      active: 'TikTok accessibility helper active. Help: press H, or Alt plus Shift plus H in browse mode.',
+      muted: 'Muted',
+      unmuted: 'Sound on, volume {pct} percent',
+      volume: 'Volume {pct} percent',
+      volumeMutedSuffix: ', muted',
+      noVideo: 'No video found',
+      play: 'Playing',
+      pause: 'Paused',
+      noNext: 'No next video',
+      noPrev: 'No previous video',
+      likeBtnMissing: 'Like button not found',
+      liked: 'Liked',
+      unliked: 'Like removed',
+      likeToggled: 'Like toggled',
+      commentBtnMissing: 'Comment button not found',
+      commentsOpenTrap: 'Comments opened, reading stays inside the panel. The edit field is at the end of the panel. Close: C.',
+      commentsOpen: 'Comments opened',
+      commentsClosed: 'Comments closed',
+      commentsCloseFailed: 'Could not close the comment panel',
+      autoOn: 'Automatic video announcements on',
+      autoOff: 'Automatic video announcements off',
+      help:
+        'TikTok accessibility keys: ' +
+        'M mute. Comma volume down, period volume up. K play or pause. ' +
+        'N next video, P previous video. L like. C open or close comments. ' +
+        'I detailed info about the current video. A toggle automatic announcements. H this help. ' +
+        'In browse mode use the same keys with Alt plus Shift.',
+      authorPrefix: 'Author: ',
+      authorUnknown: 'Author unknown',
+      descPrefix: 'Description: ',
+      musicPrefix: 'Music: ',
+      likesPrefix: 'Likes: ',
+      commentsPrefix: 'Comments: ',
+      statePlaying: 'Playing',
+      statePaused: 'Paused',
+      newVideoNoData: 'New video, no details found.',
+      labelLike: 'Like',
+      labelComments: 'Comments',
+      labelShare: 'Share',
+      labelFavorite: 'Add to favorites',
+      labelMusic: 'Music',
+    },
+  };
+
+  const uiLang = (ext.i18n && ext.i18n.getUILanguage ? ext.i18n.getUILanguage() : navigator.language) || 'en';
+  const STR = LANGS[uiLang.toLowerCase().startsWith('hu') ? 'hu' : 'en'];
+
+  function fmt(template, values) {
+    return template.replace(/\{(\w+)\}/g, (m, key) => (key in values ? values[key] : m));
+  }
 
   // ---------------------------------------------------------------------
   // Beállítások (chrome.storage.local-ban tárolva, munkamenetek közt megmarad)
@@ -151,21 +254,21 @@
     const parts = [];
     if (i.author) parts.push(i.author);
     if (i.desc) parts.push(i.desc);
-    return parts.length ? parts.join('. ') : 'Új videó, adatok nem találhatók.';
+    return parts.length ? parts.join('. ') : STR.newVideoNoData;
   }
 
   function detailedInfo(container) {
     const i = getInfo(container);
     const parts = [];
-    parts.push(i.author ? 'Szerző: ' + i.author : 'Szerző ismeretlen');
-    if (i.desc) parts.push('Leírás: ' + i.desc);
-    if (i.music) parts.push('Zene: ' + i.music);
-    if (i.likes) parts.push('Kedvelések: ' + i.likes);
-    if (i.comments) parts.push('Kommentek: ' + i.comments);
+    parts.push(i.author ? STR.authorPrefix + i.author : STR.authorUnknown);
+    if (i.desc) parts.push(STR.descPrefix + i.desc);
+    if (i.music) parts.push(STR.musicPrefix + i.music);
+    if (i.likes) parts.push(STR.likesPrefix + i.likes);
+    if (i.comments) parts.push(STR.commentsPrefix + i.comments);
     const v = getActiveVideo();
     if (v) {
-      parts.push(v.paused ? 'Szüneteltetve' : 'Lejátszás alatt');
-      parts.push(settings.muted ? 'Némítva' : 'Hangerő ' + Math.round(settings.volume * 100) + ' százalék');
+      parts.push(v.paused ? STR.statePaused : STR.statePlaying);
+      parts.push(settings.muted ? STR.muted : fmt(STR.volume, { pct: Math.round(settings.volume * 100) }));
     }
     return parts.join('. ');
   }
@@ -192,8 +295,8 @@
     saveSettings();
     announce(
       settings.muted
-        ? 'Némítva'
-        : 'Hang bekapcsolva, hangerő ' + Math.round(settings.volume * 100) + ' százalék',
+        ? STR.muted
+        : fmt(STR.unmuted, { pct: Math.round(settings.volume * 100) }),
       true
     );
   }
@@ -204,21 +307,21 @@
     applyAudio(getActiveVideo());
     saveSettings();
     announce(
-      'Hangerő ' + Math.round(settings.volume * 100) + ' százalék' + (settings.muted ? ', némítva' : ''),
+      fmt(STR.volume, { pct: Math.round(settings.volume * 100) }) + (settings.muted ? STR.volumeMutedSuffix : ''),
       true
     );
   }
 
   function playPause() {
     const v = getActiveVideo();
-    if (!v) { announce('Nem található videó', true); return; }
+    if (!v) { announce(STR.noVideo, true); return; }
     if (v.paused) {
       applyAudio(v);
       v.play().catch(() => {});
-      announce('Lejátszás', true);
+      announce(STR.play, true);
     } else {
       v.pause();
-      announce('Szünet', true);
+      announce(STR.pause, true);
     }
   }
 
@@ -252,7 +355,7 @@
     setTimeout(() => {
       const after = getContainer(getActiveVideo());
       if (after === current) {
-        announce(direction > 0 ? 'Nincs következő videó' : 'Nincs előző videó', true);
+        announce(direction > 0 ? STR.noNext : STR.noPrev, true);
       } else if (!settings.autoAnnounce) {
         announce(shortInfo(after));
       }
@@ -269,15 +372,15 @@
   function likeCurrent() {
     const container = getContainer(getActiveVideo()) || document;
     const btn = clickable(container.querySelector(SEL.likeBtn) || document.querySelector(SEL.likeBtn));
-    if (!btn) { announce('Kedvelés gomb nem található', true); return; }
+    if (!btn) { announce(STR.likeBtnMissing, true); return; }
     const wasPressed = btn.getAttribute('aria-pressed');
     btn.click();
     setTimeout(() => {
       const nowPressed = btn.getAttribute('aria-pressed');
       if (nowPressed !== null && nowPressed !== wasPressed) {
-        announce(nowPressed === 'true' ? 'Kedvelve' : 'Kedvelés visszavonva', true);
+        announce(nowPressed === 'true' ? STR.liked : STR.unliked, true);
       } else {
-        announce('Kedvelés átváltva', true);
+        announce(STR.likeToggled, true);
       }
     }, 400);
   }
@@ -337,7 +440,7 @@
       if (node.parentElement === document.body) break;
       node = node.parentElement;
     }
-    if (!panel.getAttribute('aria-label')) panel.setAttribute('aria-label', 'Kommentek');
+    if (!panel.getAttribute('aria-label')) panel.setAttribute('aria-label', STR.labelComments);
     if (!panel.hasAttribute('tabindex')) panel.setAttribute('tabindex', '-1');
     try { panel.focus({ preventScroll: true }); } catch (e) { /* nem kritikus */ }
     // A "probe" a kommentlista maga: az eltűnése jelzi, hogy a panelt bezárták,
@@ -364,15 +467,15 @@
   function openComments() {
     const container = getContainer(getActiveVideo()) || document;
     const btn = clickable(container.querySelector(SEL.commentBtn) || document.querySelector(SEL.commentBtn));
-    if (!btn) { announce('Komment gomb nem található', true); return; }
+    if (!btn) { announce(STR.commentBtnMissing, true); return; }
     btn.click();
     setTimeout(() => {
       const panel = findCommentPanel();
       if (panel) {
         trapComments(panel, btn);
-        announce('Kommentek megnyitva, az olvasás a panelen belül marad. A szerkesztőmező a panel végén van. Bezárás: C.', true);
+        announce(STR.commentsOpenTrap, true);
       } else {
-        announce('Kommentek megnyitva', true);
+        announce(STR.commentsOpen, true);
       }
     }, 600);
   }
@@ -395,9 +498,9 @@
 
     setTimeout(() => {
       if (findCommentPanel()) {
-        announce('A kommentpanelt nem sikerült bezárni', true);
+        announce(STR.commentsCloseFailed, true);
       } else {
-        announce('Kommentek bezárva', true);
+        announce(STR.commentsClosed, true);
       }
     }, 500);
   }
@@ -405,22 +508,11 @@
   function toggleAutoAnnounce() {
     settings.autoAnnounce = !settings.autoAnnounce;
     saveSettings();
-    announce(
-      settings.autoAnnounce
-        ? 'Automatikus videóbejelentés bekapcsolva'
-        : 'Automatikus videóbejelentés kikapcsolva',
-      true
-    );
+    announce(settings.autoAnnounce ? STR.autoOn : STR.autoOff, true);
   }
 
   function help() {
-    announce(
-      'TikTok akadálymentesítő billentyűk: ' +
-      'M némítás. Vessző halkítás, pont hangosítás. K lejátszás vagy szünet. ' +
-      'N következő videó, P előző videó. L kedvelés. C kommentek megnyitása vagy bezárása. ' +
-      'I aktuális videó részletes adatai. A automatikus bejelentés ki és be. H ez a súgó. ' +
-      'Böngészőmódban ugyanezek Alt plusz Shift lenyomásával használhatók.'
-    );
+    announce(STR.help);
   }
 
   // ---------------------------------------------------------------------
@@ -469,11 +561,11 @@
   // Címkézetlen ikongombok felcímkézése
   // ---------------------------------------------------------------------
   const LABELS = [
-    [SEL.likeBtn, 'Kedvelés'],
-    [SEL.commentBtn, 'Kommentek'],
-    [SEL.shareBtn, 'Megosztás'],
-    [SEL.favBtn, 'Mentés a kedvencekhez'],
-    ['[data-e2e="video-music"]', 'Zene'],
+    [SEL.likeBtn, STR.labelLike],
+    [SEL.commentBtn, STR.labelComments],
+    [SEL.shareBtn, STR.labelShare],
+    [SEL.favBtn, STR.labelFavorite],
+    ['[data-e2e="video-music"]', STR.labelMusic],
   ];
 
   function labelPass() {
@@ -494,7 +586,7 @@
     // Ha a kommentpanelt nem a C-vel zárták be (pl. egérrel), oldjuk fel a csapdát
     if (commentTrap && !isVisible(commentTrap.probe)) {
       releaseCommentTrap();
-      announce('Kommentek bezárva');
+      announce(STR.commentsClosed);
     }
 
     const v = getActiveVideo();
@@ -516,7 +608,7 @@
   // ---------------------------------------------------------------------
   loadSettings().then(() => {
     setTimeout(() => {
-      announce('TikTok akadálymentesítő aktív. Súgó: H billentyű, böngészőmódban Alt plusz Shift plusz H.');
+      announce(STR.active);
     }, 1500);
   });
 })();
