@@ -3,3 +3,7 @@
 
 # Kiadási csomagok – ezek a GitHub Releases oldalra kerülnek, nem a repóba
 *.zip
+
+# Személyes jegyzetek, nem a repóba valók
+FORUM-POST.txt
+KIADASI-UTMUTATO.txt
