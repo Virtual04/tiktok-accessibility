@@ -144,8 +144,14 @@
     },
   };
 
+  // Automatikus nyelvválasztás: a böngésző nyelvi kódjához (pl. "vi-VN" -> "vi")
+  // tartozó szótárat használjuk, ha létezik a LANGS-ban. Az angol a teljes alap,
+  // amit a talált szótár bejegyzései felülírnak – így egy részleges fordítás is
+  // működik, a hiányzó szövegek angolul szólalnak meg. Új nyelv hozzáadásához
+  // elég egy új blokk a LANGS-ba, más kódot nem kell módosítani.
   const uiLang = (ext.i18n && ext.i18n.getUILanguage ? ext.i18n.getUILanguage() : navigator.language) || 'en';
-  const STR = LANGS[uiLang.toLowerCase().startsWith('hu') ? 'hu' : 'en'];
+  const langCode = uiLang.toLowerCase().split(/[-_]/)[0];
+  const STR = { ...LANGS.en, ...(LANGS[langCode] || {}) };
 
   function fmt(template, values) {
     return template.replace(/\{(\w+)\}/g, (m, key) => (key in values ? values[key] : m));
