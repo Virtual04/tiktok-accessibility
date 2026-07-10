@@ -11,7 +11,8 @@ Böngészőbővítmény, amely a tiktok.com webhelyet teszi használhatóvá ké
 - **Automatikus bejelentés** – görgetéskor az NVDA felolvassa az új videó szerzőjét és leírását.
 - **Interakciók** – kedvelés, kommentek megnyitása/bezárása billentyűvel.
 - **Címkézés** – a címkézetlen ikongombok (kedvelés, komment, megosztás…) `aria-label`-t kapnak.
-- A beállítások (hangerő, némítás, automatikus bejelentés) megmaradnak a böngésző újraindítása után is.
+- **Lejátszási sebesség** – gyorsítás/lassítás billentyűvel, a beállítás minden videóra érvényes marad.
+- A beállítások (hangerő, némítás, sebesség, automatikus bejelentés) megmaradnak a böngésző újraindítása után is.
 
 ## Billentyűparancsok
 
@@ -29,6 +30,9 @@ Minden parancs **egyetlen billentyű**, ha az NVDA **fókusz módban** van (vál
 | `F` | Hozzáadás a kedvencekhez / eltávolítás onnan |
 | `B` | A videó szerzőjének bekövetése / kikövetése |
 | `S` | A videó linkjének másolása a vágólapra |
+| `G` | Gyorsítás (0,25-ös lépésekben, legfeljebb 2×) |
+| `D` | Lassítás (legfeljebb 0,25×-ig) |
+| `R` | Vissza normál lejátszási sebességre |
 | `C` | Kommentek megnyitása / bezárása (nyitott panel alatt az olvasás a panelen belül marad, mint egy párbeszédablakban) |
 | `I` | Aktuális videó részletes adatai (szerző, leírás, zene, számlálók, állapot) |
 | `A` | Automatikus videóbejelentés ki/be |

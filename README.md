@@ -11,7 +11,8 @@ A browser extension that makes tiktok.com usable with screen readers (optimized 
 - **Automatic announcements** – when you scroll, NVDA reads the new video's author and description.
 - **Interactions** – like, open/close comments from the keyboard.
 - **Labeling** – unlabeled icon buttons (like, comment, share…) get proper `aria-label`s.
-- Settings (volume, mute, auto-announce) persist across browser restarts.
+- **Playback speed** – speed up / slow down from the keyboard; the setting carries over to every video.
+- Settings (volume, mute, speed, auto-announce) persist across browser restarts.
 
 ## Keyboard shortcuts
 
@@ -29,6 +30,9 @@ Every command is a **single key** when NVDA is in **focus mode** (toggle: `NVDA+
 | `F` | Add to / remove from favorites |
 | `B` | Follow / unfollow the video's author |
 | `S` | Copy the video link to the clipboard |
+| `G` | Speed up playback (in steps of 0.25, up to 2×) |
+| `D` | Slow down playback (down to 0.25×) |
+| `R` | Back to normal playback speed |
 | `C` | Open / close comments (while open, reading stays inside the panel, like in a dialog) |
 | `I` | Detailed info about the current video (author, description, music, counts, state) |
 | `A` | Toggle automatic video announcements |

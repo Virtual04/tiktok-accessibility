@@ -3,7 +3,7 @@
  * TikTok Accessibility – content script
  *
  * Fut minden tiktok.com oldalon. Három dolgot csinál:
- *  1. Billentyűparancsok (némítás, hangerő, navigáció, like, kommentek, infó).
+ *  1. Billentyűparancsok (némítás, hangerő, sebesség, navigáció, like, kommentek, infó).
  *     Minden parancs egyetlen betű (NVDA fókusz módban), illetve ugyanaz
  *     Alt+Shift-tel böngészőmódból is.
  *  2. Élő régió (aria-live), amin keresztül az NVDA bejelenti a történéseket,
@@ -61,11 +61,16 @@
       commentsCloseFailed: 'Nem sikerült bezárni a kommentpanelt',
       autoOn: 'Mostantól automatikusan bemondom az új videókat',
       autoOff: 'Kikapcsoltad az automatikus videóbemondást',
+      speed: 'Lejátszási sebesség: {rate}',
+      speedNormal: 'Normál sebesség',
+      speedMax: 'Ez a leggyorsabb, {rate}',
+      speedMin: 'Ez a leglassabb, {rate}',
       help:
         'A TikTok akadálymentesítő billentyűi: ' +
         'M némítás be és ki. Vessző halkítás, pont hangosítás. K lejátszás vagy megállítás. ' +
         'N a következő videó, P az előző videó. L kedvelés. F hozzáadás a kedvencekhez. ' +
         'B a szerző bekövetése vagy kikövetése. S a videó linkjének másolása a vágólapra. ' +
+        'G gyorsítás, D lassítás, R normál lejátszási sebesség. ' +
         'C a kommentek megnyitása vagy bezárása. I az aktuális videó részletes adatai. ' +
         'A az automatikus videóbemondás ki- és bekapcsolása. H ez a súgó. ' +
         'Böngészőmódban ugyanezek az Alt plusz Shift lenyomásával használhatók.',
@@ -119,11 +124,16 @@
       commentsCloseFailed: 'Could not close the comment panel',
       autoOn: 'New videos will now be announced automatically',
       autoOff: 'You turned off automatic video announcements',
+      speed: 'Playback speed: {rate}',
+      speedNormal: 'Normal speed',
+      speedMax: 'This is the fastest, {rate}',
+      speedMin: 'This is the slowest, {rate}',
       help:
         'TikTok accessibility keys: ' +
         'M mute and unmute. Comma volume down, period volume up. K play or pause. ' +
         'N next video, P previous video. L like. F add to favorites. ' +
         'B follow or unfollow the author. S copy the video link to the clipboard. ' +
+        'G speed up, D slow down, R normal playback speed. ' +
         'C open or close comments. I detailed info about the current video. ' +
         'A toggle automatic announcements. H this help. ' +
         'In browse mode use the same keys with Alt plus Shift.',
@@ -160,7 +170,7 @@
   // ---------------------------------------------------------------------
   // Beállítások (chrome.storage.local-ban tárolva, munkamenetek közt megmarad)
   // ---------------------------------------------------------------------
-  const DEFAULTS = { volume: 0.8, muted: false, autoAnnounce: true };
+  const DEFAULTS = { volume: 0.8, muted: false, autoAnnounce: true, rate: 1 };
   let settings = { ...DEFAULTS };
 
   async function loadSettings() {
@@ -260,10 +270,21 @@
     return el ? el.textContent.trim() : '';
   }
 
+  // A videó saját oldalán (vagy a hírfolyamra rárakódó lejátszónézetben) a
+  // leírás/szerző a videó konténerén KÍVÜL van, ilyenkor szabad az egész
+  // dokumentumban keresni. A hírfolyamban viszont tilos: ott a tartalék
+  // keresés egy MÁSIK videó adatait találná meg.
+  function docFallback(selector) {
+    if (location.pathname.includes('/video/') || location.pathname.includes('/photo/')) {
+      return textOf(document, selector);
+    }
+    return '';
+  }
+
   // A szerző neve: előbb a TikTok saját jelölése, ha az nincs, akkor a
   // konténeren belüli első profillinkből ("/@felhasznalonev") olvassuk ki.
   function getAuthor(scope) {
-    const direct = textOf(scope, SEL.author) || textOf(document, SEL.author);
+    const direct = textOf(scope, SEL.author) || docFallback(SEL.author);
     if (direct) return direct;
     const link = (scope || document).querySelector('a[href^="/@"], a[href*="tiktok.com/@"]');
     if (link) {
@@ -279,7 +300,7 @@
     const scope = container || document;
     return {
       author: getAuthor(scope),
-      desc: textOf(scope, SEL.desc) || textOf(document, SEL.desc),
+      desc: textOf(scope, SEL.desc) || docFallback(SEL.desc),
       music: textOf(scope, SEL.music),
       likes: textOf(scope, SEL.likeCount),
       comments: textOf(scope, SEL.commentCount),
@@ -306,6 +327,7 @@
     if (v) {
       parts.push(v.paused ? STR.statePaused : STR.statePlaying);
       parts.push(settings.muted ? STR.muted : fmt(STR.volume, { pct: Math.round(settings.volume * 100) }));
+      if (settings.rate !== 1) parts.push(fmt(STR.speed, { rate: rateText(settings.rate) }));
     }
     return parts.join('. ');
   }
@@ -319,6 +341,7 @@
     try {
       if (video.muted !== settings.muted) video.muted = settings.muted;
       if (Math.abs(video.volume - settings.volume) > 0.01) video.volume = settings.volume;
+      if (Math.abs(video.playbackRate - settings.rate) > 0.01) video.playbackRate = settings.rate;
     } catch (e) { /* pl. eltávolított elem */ }
   }
 
@@ -347,6 +370,37 @@
       fmt(STR.volume, { pct: Math.round(settings.volume * 100) }) + (settings.muted ? STR.volumeMutedSuffix : ''),
       true
     );
+  }
+
+  // Lejátszási sebesség: 0,25-ös lépések 0,25 és 2 között. A kimondott szám a
+  // felület nyelvén formázódik (magyarul tizedesvesszővel), a normál sebesség
+  // külön szöveget kap, hogy ne "egy"-et mondjon az NVDA.
+  function rateText(rate) {
+    return rate.toLocaleString(uiLang);
+  }
+
+  function announceRate() {
+    const r = settings.rate;
+    let msg;
+    if (r === 1) msg = STR.speedNormal;
+    else if (r >= 2) msg = fmt(STR.speedMax, { rate: rateText(r) });
+    else if (r <= 0.25) msg = fmt(STR.speedMin, { rate: rateText(r) });
+    else msg = fmt(STR.speed, { rate: rateText(r) });
+    announce(msg, true);
+  }
+
+  function changeRate(delta) {
+    settings.rate = Math.min(2, Math.max(0.25, Math.round((settings.rate + delta) * 4) / 4));
+    applyAudio(getActiveVideo());
+    saveSettings();
+    announceRate();
+  }
+
+  function resetRate() {
+    settings.rate = 1;
+    applyAudio(getActiveVideo());
+    saveSettings();
+    announceRate();
   }
 
   function playPause() {
@@ -665,6 +719,9 @@
     'f': favoriteCurrent,
     'b': followCurrent,
     's': copyCurrentLink,
+    'g': () => changeRate(+0.25),
+    'd': () => changeRate(-0.25),
+    'r': resetRate,
     'c': toggleComments,
     'i': () => announce(detailedInfo(getContainer(getActiveVideo()))),
     'a': toggleAutoAnnounce,
