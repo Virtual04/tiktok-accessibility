@@ -28,11 +28,14 @@ Every command is a **single key** when NVDA is in **focus mode** (toggle: `NVDA+
 | `P` | Previous video |
 | `L` | Like / remove like |
 | `F` | Add to / remove from favorites |
-| `B` | Follow / unfollow the video's author |
+| `B` | Move focus to the follow button; press `Enter` there to follow / unfollow the author |
 | `S` | Copy the video link to the clipboard |
 | `G` | Speed up playback (in steps of 0.25, up to 2×) |
 | `D` | Slow down playback (down to 0.25×) |
 | `R` | Back to normal playback speed |
+| `1` | Go to the For You feed |
+| `2` | Go to the Following feed |
+| `3` | Go to LIVE |
 | `C` | Open / close comments (while open, reading stays inside the panel, like in a dialog) |
 | `I` | Detailed info about the current video (author, description, music, counts, state) |
 | `A` | Toggle automatic video announcements |

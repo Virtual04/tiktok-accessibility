@@ -47,9 +47,13 @@
       favRemoved: 'Eltávolítottad a videót a kedvenceid közül',
       favToggled: 'Megnyomtad a kedvencek gombot',
       followBtnMissing: 'Nem találom a követés gombot',
-      followed: 'Bekövetted: {name}',
-      unfollowed: 'Kikövetted: {name}',
-      followToggled: 'Megnyomtad a követés gombot: {name}',
+      followPressEnter: 'A követés gombra álltam. Nyomd meg az Entert {name} bekövetéséhez.',
+      followConfirmed: 'Bekövetted: {name}',
+      feedForYou: 'Neked hírfolyam',
+      feedFollowing: 'Követett hírfolyam',
+      feedLive: 'Élő adások',
+      switchingFeed: 'Váltás: {feed}',
+      alreadyOnFeed: 'Már itt vagy: {feed}',
       nameFallback: 'ismeretlen felhasználó',
       linkCopied: 'A videó linkjét a vágólapra másoltam, beillesztheted bárhová',
       linkCopyFailed: 'Nem sikerült a vágólapra másolni a linket',
@@ -69,8 +73,10 @@
         'A TikTok akadálymentesítő billentyűi: ' +
         'M némítás be és ki. Vessző halkítás, pont hangosítás. K lejátszás vagy megállítás. ' +
         'N a következő videó, P az előző videó. L kedvelés. F hozzáadás a kedvencekhez. ' +
-        'B a szerző bekövetése vagy kikövetése. S a videó linkjének másolása a vágólapra. ' +
+        'B a fókuszt a követés gombra teszi, ott Enterrel követheted vagy kikövetheted a szerzőt. ' +
+        'S a videó linkjének másolása a vágólapra. ' +
         'G gyorsítás, D lassítás, R normál lejátszási sebesség. ' +
+        'Egyes a Neked hírfolyam, kettes a Követett, hármas az Élő adások. ' +
         'C a kommentek megnyitása vagy bezárása. I az aktuális videó részletes adatai. ' +
         'A az automatikus videóbemondás ki- és bekapcsolása. H ez a súgó. ' +
         'Böngészőmódban ugyanezek az Alt plusz Shift lenyomásával használhatók.',
@@ -88,6 +94,7 @@
       labelShare: 'Megosztás',
       labelFavorite: 'Mentés a kedvencekhez',
       labelMusic: 'Zene',
+      labelFollow: 'Követés',
     },
     en: {
       active: 'TikTok accessibility helper is running. For help, press H, or Alt plus Shift plus H in browse mode.',
@@ -110,9 +117,13 @@
       favRemoved: 'You removed this video from your favorites',
       favToggled: 'You pressed the favorites button',
       followBtnMissing: 'Could not find the follow button',
-      followed: 'You are now following {name}',
-      unfollowed: 'You unfollowed {name}',
-      followToggled: 'You pressed the follow button for {name}',
+      followPressEnter: 'Focus is on the follow button. Press Enter to follow {name}.',
+      followConfirmed: 'You are now following {name}',
+      feedForYou: 'For You feed',
+      feedFollowing: 'Following feed',
+      feedLive: 'LIVE feed',
+      switchingFeed: 'Switching to {feed}',
+      alreadyOnFeed: 'You are already on {feed}',
       nameFallback: 'this user',
       linkCopied: 'Video link copied to the clipboard, you can paste it anywhere',
       linkCopyFailed: 'Could not copy the link to the clipboard',
@@ -132,8 +143,10 @@
         'TikTok accessibility keys: ' +
         'M mute and unmute. Comma volume down, period volume up. K play or pause. ' +
         'N next video, P previous video. L like. F add to favorites. ' +
-        'B follow or unfollow the author. S copy the video link to the clipboard. ' +
+        'B moves focus to the follow button, where Enter follows or unfollows the author. ' +
+        'S copy the video link to the clipboard. ' +
         'G speed up, D slow down, R normal playback speed. ' +
+        '1 For You feed, 2 Following feed, 3 LIVE. ' +
         'C open or close comments. I detailed info about the current video. ' +
         'A toggle automatic announcements. H this help. ' +
         'In browse mode use the same keys with Alt plus Shift.',
@@ -151,6 +164,7 @@
       labelShare: 'Share',
       labelFavorite: 'Add to favorites',
       labelMusic: 'Music',
+      labelFollow: 'Follow',
     },
   };
 
@@ -490,29 +504,64 @@
     }, 400);
   }
 
-  // A szerző bekövetése/kikövetése ugyanazzal a gombbal. Az állapotot a gomb
-  // kattintás ELŐTTI feliratából állapítjuk meg (Follow/Követés = még nem
-  // követed), mert a TikTok nem tesz rá aria-pressed attribútumot.
-  const FOLLOW_WORDS = ['follow', 'követés', 'kövesd'];
-  const FOLLOWING_WORDS = ['following', 'friends', 'követed', 'barátok'];
+  // A szerző bekövetése/kikövetése. A dokumentum-szintű keresésnél nem az első
+  // találat kell, hanem ami a
+  // képernyőn van – az első gomb lehet egy korábbi, felgörgetett videóé is.
+  function findFollowBtn(container) {
+    if (container && container !== document) {
+      const own = clickable(container.querySelector(SEL.followBtn));
+      if (own && isVisible(own)) return own;
+    }
+    const candidates = [...document.querySelectorAll(SEL.followBtn)]
+      .map(clickable)
+      .filter(isVisible);
+    // Csak képernyőn lévő gombot fogadunk el: ha a szerzőt már követed, az
+    // aktuális videónál nincs gomb, és egy felgörgetett videóét nyomnánk meg.
+    return candidates.find((el) => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < window.innerHeight;
+    }) || null;
+  }
 
   function followCurrent() {
     const container = getContainer(getActiveVideo()) || document;
-    const el = container.querySelector(SEL.followBtn) || document.querySelector(SEL.followBtn);
-    const btn = clickable(el);
-    if (!btn || !isVisible(btn)) { announce(STR.followBtnMissing, true); return; }
-    const before = (btn.textContent || '').trim().toLowerCase();
+    const btn = findFollowBtn(container);
+    if (!btn) { announce(STR.followBtnMissing, true); return; }
     const name = getAuthor(container) || STR.nameFallback;
-    btn.click();
-    setTimeout(() => {
-      if (FOLLOW_WORDS.includes(before)) {
-        announce(fmt(STR.followed, { name }), true);
-      } else if (FOLLOWING_WORDS.includes(before)) {
-        announce(fmt(STR.unfollowed, { name }), true);
-      } else {
-        announce(fmt(STR.followToggled, { name }), true);
+
+    // A kattintás utáni ellenőrzéshez ugyanazt a gombot keressük vissza; ha a
+    // TikTok időközben újraépítette, csak a saját konténeren belül keresünk,
+    // nehogy egy másik videó gombját nézzük meg.
+    function requery() {
+      if (btn.isConnected && isVisible(btn)) return btn;
+      if (container !== document) {
+        const el = clickable(container.querySelector(SEL.followBtn));
+        if (el && isVisible(el)) return el;
       }
-    }, 400);
+      return null;
+    }
+
+    // A mesterséges (szkriptelt) kattintás a TikTok kliensén csak látszatra
+    // vált követés-ikont, de a SZERVER felé nem regisztrálja a követést, mert
+    // nem valódi felhasználói művelet. Az egyetlen megbízható út: a fókuszt a
+    // gombra tesszük, és a felhasználó valódi Enterrel követ be – azt a TikTok
+    // elfogadja. Utána figyeljük, tényleg megtörtént-e (a gomb eltűnik vagy az
+    // ikonja marad átváltva), és megerősítjük.
+    try { btn.focus(); } catch (e) { /* fókusz nélkül is elhangzik az útmutatás */ }
+    announce(fmt(STR.followPressEnter, { name }), true);
+
+    let waited = 0;
+    const timer = setInterval(() => {
+      waited += 500;
+      const now = requery();
+      // Valódi bekövetés után a hírfolyam gombja eltűnik – ez a biztos jel.
+      if (!now) {
+        clearInterval(timer);
+        announce(fmt(STR.followConfirmed, { name }), true);
+      } else if (waited >= 15000) {
+        clearInterval(timer);
+      }
+    }, 500);
   }
 
   // ---------------------------------------------------------------------
@@ -540,19 +589,17 @@
     return '';
   }
 
-  async function copyCurrentLink() {
-    const url = getVideoUrl(getContainer(getActiveVideo()));
-    if (!url) { announce(STR.linkNotFound, true); return; }
+  async function copyText(text) {
     let ok = false;
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(text);
       ok = true;
     } catch (e) { /* jön a tartalék módszer */ }
     if (!ok) {
       const focused = document.activeElement;
       try {
         const ta = document.createElement('textarea');
-        ta.value = url;
+        ta.value = text;
         ta.style.cssText = 'position:fixed;opacity:0;';
         document.body.appendChild(ta);
         ta.select();
@@ -563,6 +610,13 @@
         try { focused.focus({ preventScroll: true }); } catch (e) { /* nem kritikus */ }
       }
     }
+    return ok;
+  }
+
+  async function copyCurrentLink() {
+    const url = getVideoUrl(getContainer(getActiveVideo()));
+    if (!url) { announce(STR.linkNotFound, true); return; }
+    const ok = await copyText(url);
     announce(ok ? STR.linkCopied : STR.linkCopyFailed, true);
   }
 
@@ -697,6 +751,35 @@
   }
 
   // ---------------------------------------------------------------------
+  // Hírfolyamváltás (1: Neked, 2: Követett, 3: Élő). Nem az oldalsáv füleire
+  // kattintunk – azok fókusza NVDA alatt elugrik –, hanem közvetlenül a
+  // hírfolyam címére lépünk, mintha a linket nyitottuk volna meg.
+  // ---------------------------------------------------------------------
+  const FEEDS = [
+    { path: '/foryou', name: 'feedForYou', isCurrent: (p) => p === '/' || p.indexOf('/foryou') === 0 },
+    { path: '/following', name: 'feedFollowing', isCurrent: (p) => p.indexOf('/following') === 0 },
+    { path: '/live', name: 'feedLive', isCurrent: (p) => p.indexOf('/live') === 0 },
+  ];
+
+  function currentFeedName() {
+    for (const f of FEEDS) {
+      if (f.isCurrent(location.pathname)) return STR[f.name];
+    }
+    return '';
+  }
+
+  function gotoFeed(feed) {
+    const name = STR[feed.name];
+    if (feed.isCurrent(location.pathname)) {
+      announce(fmt(STR.alreadyOnFeed, { feed: name }), true);
+      return;
+    }
+    announce(fmt(STR.switchingFeed, { feed: name }), true);
+    // Kis késleltetés, hogy a bemondás elinduljon, mielőtt az oldal elnavigál
+    setTimeout(() => { location.href = location.origin + feed.path; }, 400);
+  }
+
+  // ---------------------------------------------------------------------
   // Billentyűkezelés
   // ---------------------------------------------------------------------
   function isTypingTarget(el) {
@@ -726,6 +809,9 @@
     'i': () => announce(detailedInfo(getContainer(getActiveVideo()))),
     'a': toggleAutoAnnounce,
     'h': help,
+    '1': () => gotoFeed(FEEDS[0]),
+    '2': () => gotoFeed(FEEDS[1]),
+    '3': () => gotoFeed(FEEDS[2]),
   };
 
   window.addEventListener('keydown', (e) => {
@@ -736,7 +822,10 @@
     const target = (e.composedPath && e.composedPath()[0]) || e.target;
     if (!withModifier && isTypingTarget(target)) return; // gépelés közben nem nyúlunk bele
 
-    const command = COMMANDS[e.key.toLowerCase()];
+    // Magyar (és más) kiosztáson a Shift+szám írásjelet ad, ezért böngészőmódban
+    // (Alt+Shift) a fizikai számbillentyűt az e.code alapján ismerjük fel.
+    const digit = /^Digit(\d)$/.exec(e.code || '');
+    const command = COMMANDS[e.key.toLowerCase()] || (digit && COMMANDS[digit[1]]);
     if (!command) return;
 
     e.preventDefault();
@@ -752,6 +841,7 @@
     [SEL.commentBtn, STR.labelComments],
     [SEL.shareBtn, STR.labelShare],
     [SEL.favBtn, STR.labelFavorite],
+    [SEL.followBtn, STR.labelFollow],
     ['[data-e2e="video-music"]', STR.labelMusic],
   ];
 
@@ -795,7 +885,8 @@
   // ---------------------------------------------------------------------
   loadSettings().then(() => {
     setTimeout(() => {
-      announce(STR.active);
+      const feed = currentFeedName();
+      announce(feed ? feed + '. ' + STR.active : STR.active);
     }, 1500);
   });
 })();

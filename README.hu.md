@@ -28,11 +28,14 @@ Minden parancs **egyetlen billentyű**, ha az NVDA **fókusz módban** van (vál
 | `P` | Előző videó |
 | `L` | Kedvelés / kedvelés visszavonása |
 | `F` | Hozzáadás a kedvencekhez / eltávolítás onnan |
-| `B` | A videó szerzőjének bekövetése / kikövetése |
+| `B` | A fókuszt a követés gombra teszi; ott `Enter`rel követheted / kikövetheted a szerzőt |
 | `S` | A videó linkjének másolása a vágólapra |
 | `G` | Gyorsítás (0,25-ös lépésekben, legfeljebb 2×) |
 | `D` | Lassítás (legfeljebb 0,25×-ig) |
 | `R` | Vissza normál lejátszási sebességre |
+| `1` | Ugrás a Neked hírfolyamra |
+| `2` | Ugrás a Követett hírfolyamra |
+| `3` | Ugrás az Élő adásokra |
 | `C` | Kommentek megnyitása / bezárása (nyitott panel alatt az olvasás a panelen belül marad, mint egy párbeszédablakban) |
 | `I` | Aktuális videó részletes adatai (szerző, leírás, zene, számlálók, állapot) |
 | `A` | Automatikus videóbejelentés ki/be |
